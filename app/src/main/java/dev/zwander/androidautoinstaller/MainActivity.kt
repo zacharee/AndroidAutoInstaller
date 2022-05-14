@@ -1,5 +1,6 @@
 package dev.zwander.androidautoinstaller
 
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -38,10 +39,14 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(
+    showBackground = true,
+    uiMode = UI_MODE_NIGHT_YES
+)
 @Composable
 fun MainContent(onCloseApp: () -> Unit = {}) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     var isLoading by remember {
         mutableStateOf(false)
@@ -52,8 +57,6 @@ fun MainContent(onCloseApp: () -> Unit = {}) {
     var canInstall by remember {
         mutableStateOf(context.canInstall)
     }
-
-    val scope = rememberCoroutineScope()
 
     val apkPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
