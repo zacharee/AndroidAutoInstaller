@@ -3,6 +3,7 @@ package dev.zwander.androidautoinstaller.ui.components
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,11 +52,12 @@ fun InstallView(
     }
 
     ConstraintLayout(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .padding(16.dp)
             .widthIn(max = 600.dp)
     ) {
-        val (button, text) = createRefs()
+        val (button, text, note) = createRefs()
 
         Text(
             text = stringResource(id = R.string.usage_desc),
@@ -83,5 +85,13 @@ fun InstallView(
                 fontSize = 24.sp
             )
         }
+
+        Text(
+            text = stringResource(id = R.string.usage_note),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.constrainAs(note) {
+                top.linkTo(button.bottom, margin = 32.dp)
+            }
+        )
     }
 }

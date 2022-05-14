@@ -1,7 +1,8 @@
 <resources>
     <string name="app_name">AndroidAutoInstaller</string>
 
-    <string name="usage_desc">Tap the button below to select an Android Auto app you want to sideload.</string>
+    <string name="usage_desc">Tap the button below to select an Android Auto app you want to install.</string>
+    <string name="usage_note">Note that some apps may not show up in Android Auto even using this installer.</string>
 
     <string name="allow_installs_title">Allow App Installs</string>
     <string name="allow_installs_message">In order to add apps to Android Auto, you need to allow this app to install packages from unknown sources.</string>
