@@ -57,7 +57,7 @@ fun Context.copyApkToCache(input: Uri, output: Uri) {
 }
 
 fun Context.installApk(uri: Uri) {
-    val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
             data = uri
         }
