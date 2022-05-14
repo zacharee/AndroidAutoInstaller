@@ -1,13 +1,12 @@
 package dev.zwander.androidautoinstaller
 
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,9 +14,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import dev.zwander.androidautoinstaller.ui.theme.AndroidAutoInstallerTheme
 import dev.zwander.androidautoinstaller.util.*
@@ -28,6 +27,9 @@ import kotlinx.coroutines.withContext
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         setContent {
             MainContent {
                 finish()
@@ -90,7 +92,7 @@ fun MainContent(onCloseApp: () -> Unit = {}) {
             modifier = Modifier.fillMaxSize()
         ) {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().systemBarsPadding(),
                 contentAlignment = Alignment.Center
             ) {
                 when {
@@ -101,6 +103,7 @@ fun MainContent(onCloseApp: () -> Unit = {}) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.padding(16.dp)
+                                .widthIn(max = 600.dp)
                         ) {
                             Text(
                                 text = stringResource(id = R.string.usage_desc),
@@ -126,23 +129,17 @@ fun MainContent(onCloseApp: () -> Unit = {}) {
                     else -> {
                         AlertDialog(
                             onDismissRequest = {},
-                            buttons = {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 8.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                ) {
-                                    OutlinedButton(onClick = onCloseApp) {
-                                        Text(stringResource(id = R.string.close_app))
-                                    }
-
-                                    OutlinedButton(onClick = {
-                                        awaitingRequestResult = true
-                                        context.requestInstall()
-                                    }) {
-                                        Text(stringResource(id = R.string.allow))
-                                    }
+                            dismissButton = {
+                                TextButton(onClick = onCloseApp) {
+                                    Text(stringResource(id = R.string.close_app))
+                                }
+                            },
+                            confirmButton = {
+                                OutlinedButton(onClick = {
+                                    awaitingRequestResult = true
+                                    context.requestInstall()
+                                }) {
+                                    Text(stringResource(id = R.string.allow))
                                 }
                             },
                             title = {
