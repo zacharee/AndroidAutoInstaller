@@ -3,12 +3,10 @@ package dev.zwander.androidautoinstaller.ui.components
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -18,6 +16,7 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import dev.zwander.androidautoinstaller.R
 import dev.zwander.androidautoinstaller.util.copyApkToCache
+import dev.zwander.androidautoinstaller.util.createCacheFile
 import dev.zwander.androidautoinstaller.util.createCacheUri
 import dev.zwander.androidautoinstaller.util.installApk
 import kotlinx.coroutines.Dispatchers
@@ -31,20 +30,24 @@ fun InstallView(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
+    val installlauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {
+        onLoadingChanged(false)
+    }
+
     val apkPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) {
         if (it != null) {
             scope.launch {
-                val export = context.createCacheUri("temp_apk.apk")
+                val export = context.createCacheFile("temp_apk.apk")
 
                 withContext(Dispatchers.IO) {
                     context.copyApkToCache(it, export)
                 }
 
-                onLoadingChanged(false)
-
-                context.installApk(export)
+                context.installApk(export, installlauncher)
             }
         } else {
             onLoadingChanged(false)

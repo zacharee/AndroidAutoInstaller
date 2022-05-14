@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.core.content.FileProvider
 import dev.zwander.androidautoinstaller.R
 import java.io.File
@@ -36,11 +37,15 @@ fun Context.requestInstall() {
     ).show()
 }
 
-fun Context.createCacheUri(apkName: String): Uri {
+fun Context.createCacheFile(apkName: String): File {
     val apkFile = File("$cacheDir/apks", apkName)
     apkFile.parentFile?.mkdirs()
     apkFile.delete()
 
+    return apkFile
+}
+
+fun Context.createCacheUri(apkFile: File): Uri {
     return FileProvider.getUriForFile(
         this,
         "$packageName.provider",
@@ -48,28 +53,22 @@ fun Context.createCacheUri(apkName: String): Uri {
     )
 }
 
-fun Context.copyApkToCache(input: Uri, output: Uri) {
+fun Context.copyApkToCache(input: Uri, output: File) {
     contentResolver.openInputStream(input).use { inStream ->
-        contentResolver.openOutputStream(output).use { outStream ->
+        output.outputStream().use { outStream ->
             inStream.copyTo(outStream)
         }
     }
 }
 
-fun Context.installApk(uri: Uri) {
-    val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
-            data = uri
-        }
-    } else {
-        Intent(Intent.ACTION_VIEW).apply {
-            setDataAndTypeAndNormalize(uri, "application/vnd.android.package-archive")
-        }
-    }.apply {
+fun Context.installApk(file: File, launcher: ActivityResultLauncher<Intent>) {
+    val intent = Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
+        data = createCacheUri(file)
+
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
         putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
         putExtra(Intent.EXTRA_INSTALLER_PACKAGE_NAME, "com.android.vending")
     }
 
-    startActivity(intent)
+    launcher.launch(intent)
 }
