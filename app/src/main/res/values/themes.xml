@@ -3,5 +3,12 @@
     <style name="Theme.AndroidAutoInstaller" parent="Theme.Material3.Dark.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
+
+        <item name="colorPrimary">#43a047</item>
+        <item name="colorPrimaryDark">#00701a</item>
+        <item name="colorPrimaryVariant">#76d275</item>
+
+        <item name="colorSecondary">#1976d2</item>
+        <item name="colorSecondaryVariant">#63a4ff</item>
     </style>
 </resources>
