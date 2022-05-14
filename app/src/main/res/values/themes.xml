@@ -4,11 +4,11 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
 
-        <item name="colorPrimary">#43a047</item>
-        <item name="colorPrimaryDark">#00701a</item>
-        <item name="colorPrimaryVariant">#76d275</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryLight</item>
 
-        <item name="colorSecondary">#1976d2</item>
-        <item name="colorSecondaryVariant">#63a4ff</item>
+        <item name="colorSecondary">@color/colorSecondary</item>
+        <item name="colorSecondaryVariant">@color/colorSecondaryLight</item>
     </style>
 </resources>
