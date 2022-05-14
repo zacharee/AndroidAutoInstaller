@@ -3,27 +3,23 @@ package dev.zwander.androidautoinstaller
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
+import dev.zwander.androidautoinstaller.ui.components.InstallView
+import dev.zwander.androidautoinstaller.ui.components.PermissionsPrompt
 import dev.zwander.androidautoinstaller.ui.theme.AndroidAutoInstallerTheme
 import dev.zwander.androidautoinstaller.util.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,6 +35,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Preview(
     showBackground = true,
     uiMode = UI_MODE_NIGHT_YES
@@ -46,45 +43,19 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainContent(onCloseApp: () -> Unit = {}) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
 
     var isLoading by remember {
         mutableStateOf(false)
     }
-    var awaitingRequestResult by remember {
-        mutableStateOf(false)
-    }
+
     var canInstall by remember {
         mutableStateOf(context.canInstall)
-    }
-
-    val apkPicker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) {
-        if (it != null) {
-            scope.launch {
-                val export = context.createCacheUri("temp_apk.apk")
-
-                withContext(Dispatchers.IO) {
-                    context.copyApkToCache(it, export)
-                }
-
-                isLoading = false
-
-                context.installApk(export)
-            }
-        } else {
-            isLoading = false
-        }
     }
 
     OnLifecycleEvent { _, event ->
         when (event) {
             Lifecycle.Event.ON_RESUME -> {
-                if (awaitingRequestResult) {
-                    awaitingRequestResult = false
-                    canInstall = context.canInstall
-                }
+                canInstall = context.canInstall
             }
             else -> {}
         }
@@ -95,63 +66,36 @@ fun MainContent(onCloseApp: () -> Unit = {}) {
             modifier = Modifier.fillMaxSize()
         ) {
             Box(
-                modifier = Modifier.fillMaxSize().systemBarsPadding(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .systemBarsPadding(),
                 contentAlignment = Alignment.Center
             ) {
-                when {
-                    isLoading -> {
-                        CircularProgressIndicator()
-                    }
-                    canInstall -> {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(16.dp)
-                                .widthIn(max = 600.dp)
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.usage_desc),
-                                textAlign = TextAlign.Center
-                            )
-
-                            Spacer(modifier = Modifier.size(64.dp))
-
-                            OutlinedButton(
-                                onClick = {
-                                    isLoading = true
-                                    apkPicker.launch(arrayOf("application/vnd.android.package-archive"))
-                                },
-                                modifier = Modifier.heightIn(64.dp).fillMaxWidth()
-                            ) {
-                                Text(
-                                    text = stringResource(id = R.string.select_apk),
-                                    fontSize = 24.sp
-                                )
-                            }
+                AnimatedContent(
+                    targetState = canInstall
+                ) {
+                    if (it) {
+                        InstallView { loading ->
+                            isLoading = loading
                         }
+                    } else {
+                        PermissionsPrompt(onCloseApp = onCloseApp)
                     }
-                    else -> {
-                        AlertDialog(
-                            onDismissRequest = {},
-                            dismissButton = {
-                                TextButton(onClick = onCloseApp) {
-                                    Text(stringResource(id = R.string.close_app))
-                                }
-                            },
-                            confirmButton = {
-                                OutlinedButton(onClick = {
-                                    awaitingRequestResult = true
-                                    context.requestInstall()
-                                }) {
-                                    Text(stringResource(id = R.string.allow))
-                                }
-                            },
-                            title = {
-                                Text(stringResource(id = R.string.allow_installs_title))
-                            },
-                            text = {
-                                Text(stringResource(id = R.string.allow_installs_message))
-                            }
-                        )
+                }
+
+                AnimatedVisibility(
+                    visible = isLoading,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.7f))
+                            .zIndex(2f),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
                     }
                 }
             }
